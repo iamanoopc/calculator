@@ -1,0 +1,229 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Calculator App</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">
+  </head>
+  <body>
+    <link rel="stylesheet" href="style.css">
+    <!--
+    The recommended approach in React is to use a container
+    dive to load your react code into, rather than using `document.body`.
+    
+    This can be any element or tag name, just don't use `document.body`
+    if you can avoid it.
+    -->
+    <div id="wrapper">
+<div id="container">
+  <div id="FXtext">
+   <div class="elegantshadow">
+     AWESOME CALCULATOR
+   </div>
+  </div>
+  
+
+  <div id="calculator"></div> 
+</div>
+</div>
+    
+    <!--
+    For ease of use, we are including the React, ReactDOM and Babel CDN
+    builds to make getting started as fast as possible.
+    
+    In production, you'll want to instead look at using something 
+    like Gulp, Grunt or WebPack (my personal recommendation) 
+    to compile JSX into JavaScript. Also, check out:
+    http://facebook.github.io/react/docs/tooling-integration.html
+    -->
+    <script src="https://fb.me/react-15.0.1.js"></script>
+    <script src="https://fb.me/react-dom-15.0.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    
+    <!--
+    This is where you link to your React code. Can be .js or .jsx 
+    extension, doesn't really matter.
+    -->
+    <script type="text/babel">const Calculator = React.createClass({
+  getInitialState() {
+    return {
+      expression: "",
+      calculationArray: [],      
+      equation: "", 
+      waitingForOperator: true,
+      answer: 0
+    };
+  },
+  
+  inputDigit(val) {
+    const { expression, equation, waitingForOperator } = this.state;
+
+    this.setState({
+      expression: expression === "0" ? String(val) : expression + String(val),
+      equation: equation === "0" ? String(val) : equation + String(val),
+      waitingForOperator:true
+    });
+  },
+  
+  inputDot() {
+    const { expression , equation } = this.state;
+    if (expression.indexOf(".") == -1) {
+      this.setState({
+        expression: expression=="" ? "0." :expression + ".",
+        equation: equation=="" ? "0." :equation + "."
+      });
+    }
+  },
+  
+  inputSign() {
+    const { expression, equation } = this.state;
+    if (expression.charAt(0) == "-") {
+      this.setState({
+        expression: expression.substr(1),
+        equation: equation.substr(1)
+      });
+    } else {
+      this.setState({
+        expression: "-" + expression,
+        equation: "-" + equation
+      });
+    }
+  },
+  
+  clearAll() {
+    const { expression , equation, calculationArray, answer} = this.state;
+    this.setState({
+      expression: "",
+      equation: "",
+      calculationArray: [],
+      answer: 0
+    });
+  },
+  
+  backSpace() {
+    const { expression, equation } = this.state;
+    this.setState({
+      expression: expression.substr(0, expression.length - 1),
+      equation: equation.substr(0, equation.length - 1)
+    });
+  },
+  percent() {
+    const { expression, equation } = this.state;
+    this.setState({
+      expression: String(Number(expression)/100),
+      equation: String(Number(expression)/100)
+    });
+  },
+  
+  inputOperator(oper) {
+    const { expression, calculationArray, waitingForOperator, equation} = this.state;
+    if(waitingForOperator){
+      this.setState({      
+        calculationArray: calculationArray.concat(expression).concat(oper),
+        expression:"",
+        equation: equation+oper,
+        waitingForOperator:false
+
+      });
+    }
+    
+  },
+  computeResult() {
+    const { expression, calculationArray, waitingForOperator, answer} = this.state;
+    var arithmetic = {
+        '+': function (x, y) { return x + y },
+        '-': function (x, y) { return x - y },
+        '*': function (x, y) { return x * y },
+        '/': function (x, y) { return x / y },
+    };    
+    var total = Number(calculationArray[0]);
+    var tempcalculationArray = calculationArray.concat(expression);
+    for(var i=1; i<tempcalculationArray.length; i=i+2){
+      total = arithmetic[tempcalculationArray[i]](total, Number(tempcalculationArray[i+1]));
+    }
+    this.setState((prevState) => ({      
+      calculationArray: prevState.calculationArray.concat(expression),
+      waitingForOperator:false,
+      answer: total
+    }));
+    
+    
+  },
+  
+  render() {
+    const { answer, equation, math } = this.state;
+
+    return (
+      <div>
+
+        <div id="displayarea">
+          <div className="sweet-title"></div>
+          <div id="equation"><div>{equation}</div></div>
+          <div id="answer"><p>{answer}</p></div>
+        </div>
+        <div id="calculatorpanel">
+
+          <div className="row">
+            <button className="btn" onClick={() => this.clearAll()}>AC</button>
+            <button className="btn" onClick={() => this.backSpace()}>←</button>
+            <button className="btn" onClick={() => this.inputOperator("/")}>÷</button>
+            <button className="btn" onClick={() => this.inputOperator("*")}>X</button>
+          </div>
+          <div className="row">
+            <button className="btn" onClick={() => this.inputDigit(7)}>
+              7
+            </button>
+            <button className="btn" onClick={() => this.inputDigit(8)}>
+              8
+            </button>
+            <button className="btn" onClick={() => this.inputDigit(9)}>
+              9
+            </button>
+            <button className="btn" onClick={() => this.inputOperator("-")}>-</button>
+          </div>
+          <div className="row">
+            <button className="btn" onClick={() => this.inputDigit(4)}>
+              4
+            </button>
+            <button className="btn" onClick={() => this.inputDigit(5)}>
+              5
+            </button>
+            <button className="btn" onClick={() => this.inputDigit(6)}>
+              6
+            </button>
+            <button className="btn" onClick={() => this.inputOperator("+")}>+</button>
+          </div>
+          <div className="row">
+            <button className="btn" onClick={() => this.inputDigit(1)}>
+              1
+            </button>
+            <button className="btn" onClick={() => this.inputDigit(2)}>
+              2
+            </button>
+            <button className="btn" onClick={() => this.inputDigit(3)}>
+              3
+            </button>
+            <button className="btn" onClick={() => this.percent()}>%</button>
+          </div>
+          <div className="row">
+            <button className="btn" onClick={() => this.inputDigit(0)}>
+              0
+            </button>
+            <button className="btn" onClick={() => this.inputSign()}>±</button>
+            <button className="btn" onClick={() => this.inputDot()}>.</button>
+            <button className="btn" onClick={() => this.computeResult()}>=</button>
+
+          </div>
+        </div>
+        {/*<pre>{JSON.stringify(this.state, null, 2)}</pre>*/}
+      </div>
+    );
+  }
+});
+ReactDOM.render(<Calculator />, document.getElementById("calculator"));
+
+    </script>
+  </body>
+</html>
